@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Resume Matcher</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-100 flex items-center justify-center min-h-screen">
+    <div class="bg-white p-8 rounded-lg shadow-md w-full max-w-2xl">
+        <h2 class="text-2xl font-bold mb-4 text-center">Upload Resume & Job Descriptions</h2>
+        <form id="uploadForm" enctype="multipart/form-data">
+            <input type="file" name="resume" id="resume" class="w-full p-2 border rounded-md mb-4" required>
+            <label class="block font-semibold">Enter up to 5 job descriptions:</label>
+            <textarea name="job1" class="w-full p-2 border rounded-md mt-2" placeholder="Job Description 1"></textarea>
+            <textarea name="job2" class="w-full p-2 border rounded-md mt-2" placeholder="Job Description 2"></textarea>
+            <textarea name="job3" class="w-full p-2 border rounded-md mt-2" placeholder="Job Description 3"></textarea>
+            <textarea name="job4" class="w-full p-2 border rounded-md mt-2" placeholder="Job Description 4"></textarea>
+            <textarea name="job5" class="w-full p-2 border rounded-md mt-2" placeholder="Job Description 5"></textarea>
+            <button type="submit" class="w-full bg-blue-500 text-white py-2 rounded-md mt-4 hover:bg-blue-600">Upload & Match</button>
+        </form>
+        <div id="results" class="mt-6"></div>
+    </div>
+
+    <script>
+        document.getElementById('uploadForm').addEventListener('submit', async function (event) {
+            event.preventDefault();
+            const formData = new FormData(this);
+            
+            const response = await fetch('/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            const data = await response.json();
+            let resultsContainer = document.getElementById('results');
+            resultsContainer.innerHTML = "";
+
+            if (data.error) {
+                resultsContainer.innerHTML = `<p class='text-red-500'>${data.error}</p>`;
+                return;
+            }
+
+            data.forEach(job => {
+                resultsContainer.innerHTML += `
+                    <div class='bg-gray-200 p-4 mt-2 rounded-md'>
+                        <h3 class='font-bold'>${job["Job Description"]}</h3>
+                        <p>Cosine Similarity: ${(job["Cosine Similarity"] * 100).toFixed(2)}%</p>
+                        <p>Overlap Coefficient: ${(job["Overlap Coefficient"] * 100).toFixed(2)}%</p>
+                        <p>BERT Semantic Similarity: ${(job["BERT Semantic Similarity"] * 100).toFixed(2)}%</p>
+                        <p class='font-bold'>Average Score: ${(job["Average Score"] * 100).toFixed(2)}%</p>
+                    </div>
+                `;
+            });
+        });
+    </script>
+</body>
+</html>
